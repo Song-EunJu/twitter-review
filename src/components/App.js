@@ -1,11 +1,24 @@
 import React, {useState} from "react";
+import { authService } from "../fbase";
 import AppRouter from "./Router";
 
 function App() {
-  const [isLoggedIn, setLoggedIn]=useState(false);
+  const [user, setUser]=useState(false); // 유저 정보
+  const [init, setInit]=useState(false); // 초기화 여부
+
+  authService.onAuthStateChanged(user=>{
+    if(user)
+      setUser(user);
+    else
+      setUser(null);
+    setInit(true);
+  });
+
   return (
     <>
-      <AppRouter isLoggedIn={isLoggedIn}/>
+      {
+        init ? <AppRouter isLoggedIn={Boolean(user)} user={user}/> : "Initializing"
+      }
       <footer>&copy; {new Date().getFullYear()} Twitter</footer>
     </>
   );
