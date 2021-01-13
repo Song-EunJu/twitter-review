@@ -1,17 +1,17 @@
 import React from "react";
 import {Link} from "react-router-dom";
-const Navigation = ({user}) => {
+const Navigation = ({userObj}) => {
     return (
-        <>
+        <nav>
             <ul>
-                <Link to="/">
-                    <li>Home</li>
-                </Link>
-                <Link to="/profile">
-                    <li>{user.displayName ? `${user.displayName}'s Profile` : "Profile"}</li>
-                </Link>
+                <li>
+                    <Link to="/">Home</Link>
+                </li> 
+                <li>
+                    <Link to="/profile">{userObj.displayName ? `${userObj.displayName}'s Profile` : "Profile"}</Link>
+                </li>
             </ul>
-        </>
+        </nav>
     )
 }
 export default Navigation;

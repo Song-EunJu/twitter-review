@@ -3,7 +3,7 @@ import Instagram from "../components/Instagram";
 import { v4 as uuidv4 } from 'uuid';
 import { dbService, storageService } from "../fbase";
 
-const Home = ({user}) => {
+const Home = ({userObj}) => {
     const [post, setPost]=useState("");
     const [posts, setPosts]=useState([]);
     const [file, setFile]=useState("");
@@ -17,14 +17,14 @@ const Home = ({user}) => {
         event.preventDefault();
         let url="";
         if(file!==""){
-            const fileRef = storageService.ref().child(`${user.uid}/${uuidv4()}`);
+            const fileRef = storageService.ref().child(`${userObj.uid}/${uuidv4()}`);
             await fileRef.putString(file, "data_url");
             url = await fileRef.getDownloadURL();
         }
         await dbService.collection("posts").add({
             createdAt:Date.now(),
             text:post,
-            user:user.uid,
+            user:userObj.uid,
             url
         })
         setPost("");
@@ -83,7 +83,7 @@ const Home = ({user}) => {
                     <Instagram
                         key={post.post_id}
                         post={post}
-                        isOwner={post.user === user.uid}
+                        isOwner={post.user === userObj.uid}
                     />
                 ))
             }
