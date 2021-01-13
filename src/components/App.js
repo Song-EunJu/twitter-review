@@ -1,33 +1,47 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import { authService } from "../fbase";
 import AppRouter from "./Router";
 
 function App() {
-  const [user, setUser]=useState(false); // 유저 정보
+  const [user, setUser]=useState(null); // 유저 정보
   const [init, setInit]=useState(false); // 초기화 여부
 
-  authService.onAuthStateChanged(user=>{
-    if(user){
-      setUser(user);
-      console.log(user)
-    }
-    else
-      setUser(null);
-    setInit(true);
-  });
+  useEffect(()=>{
+    authService.onAuthStateChanged(user=>{
+      if(user){
+        setUser({
+          disPlayName: user.disPlayName,
+          uid: user.uid,
+          updateProfile: (args) => user.updateProfile(args) 
+        })
+      }
+      else
+        setUser(null);
+      setInit(true);
+    });
+  },[]);
 
-  // const refreshUser = () => {
-  //   user.updateProfile({
-  //     disPlayName:disPlayName
-  //   })
-  // }
+  const refreshUser = async() => {
+    const user=authService.currentUser;
+    setUser({
+      disPlayName: user.disPlayName,
+      uid: user.uid,
+      updateProfile: (args) => user.updateProfile(args) 
+    });
+  }
 
   return (
     <>
       {
-        init ? <AppRouter isLoggedIn={Boolean(user)} user={user}/> : "Initializing"
+        init ? (
+          <AppRouter 
+            isLoggedIn={Boolean(user)} 
+            user={user}
+            refreshUser={refreshUser}
+          />
+        ) : "Initializing"
       }
-      <footer>&copy; {new Date().getFullYear()} Twitter</footer>
+      <footer>&copy; {new Date().getFullYear()} Instagram</footer>
     </>
   );
 }

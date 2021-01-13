@@ -1,16 +1,16 @@
 import React, {useEffect, useState} from "react";
-import Tweet from "../components/Tweet";
+import Instagram from "../components/Instagram";
 import { v4 as uuidv4 } from 'uuid';
 import { dbService, storageService } from "../fbase";
 
 const Home = ({user}) => {
-    const [tweet, setTweet]=useState("");
-    const [tweets, setTweets]=useState([]);
+    const [post, setPost]=useState("");
+    const [posts, setPosts]=useState([]);
     const [file, setFile]=useState("");
 
     const onChange = (event) => {
         const {target:{value}}=event;
-        setTweet(value);
+        setPost(value);
     }
 
     const onSubmit = async(event) => {
@@ -21,24 +21,28 @@ const Home = ({user}) => {
             await fileRef.putString(file, "data_url");
             url = await fileRef.getDownloadURL();
         }
-        await dbService.collection("tweets").add({
+        await dbService.collection("posts").add({
             createdAt:Date.now(),
-            text:tweet,
+            text:post,
             user:user.uid,
             url
         })
-        setTweet("");
+        setPost("");
         setFile("");
     }
 
     useEffect(()=>{
-        dbService.collection("tweets").orderBy("createdAt","desc").onSnapshot(snapshot=> {
-            const tweetArray=snapshot.docs.map(doc => ({
-                ...doc.data(),
-                tweet_id:doc.id    
-            }))
-            setTweets(tweetArray);
-        })
+        let mounted=true;
+        if(mounted){
+            dbService.collection("posts").orderBy("createdAt","desc").onSnapshot(snapshot=> {
+                const instaArray=snapshot.docs.map(doc => ({
+                    ...doc.data(),
+                    post_id:doc.id    
+                }))
+                setPosts(instaArray);
+            })
+        }
+        return () => mounted=false;
     },[]);
 
     const attachFile = (event) => {
@@ -63,11 +67,11 @@ const Home = ({user}) => {
                 <input
                     type="text"
                     placeholder="What's on your mind?"
-                    value={tweet}
+                    value={post}
                     required
                     onChange={onChange}
                 />
-                <input type="submit" value="Tweet"/>
+                <input type="submit" value="Post"/>
                 <input type="file" accept="image/*" onChange={attachFile}/>
 
             </form>
@@ -75,11 +79,11 @@ const Home = ({user}) => {
             <button onClick={clearFile}>Clear</button>
 
             { 
-                tweets.map(tweet => (
-                    <Tweet 
-                        key={tweet.tweet_id}
-                        tweet={tweet}
-                        isOwner={tweet.user === user.uid}
+                posts.map(post => (
+                    <Instagram
+                        key={post.post_id}
+                        post={post}
+                        isOwner={post.user === user.uid}
                     />
                 ))
             }

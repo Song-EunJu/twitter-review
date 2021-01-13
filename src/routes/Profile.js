@@ -1,8 +1,11 @@
-import React, {useState} from "react";
-import { authService } from "../fbase";
+import React, {useEffect, useState} from "react";
+import Instagram from "../components/Instagram";
+import { authService, dbService } from "../fbase";
 
-const Profile = ({user}) => {
-    const [newDisPlayName,setNewDisPlayName]=useState("");
+const Profile = ({user, refreshUser}) => {
+    const [newDisPlayName,setNewDisPlayName]=useState(user.disPlayName);
+    const [postArray, setPostArray] =useState([]);
+
     const logOut = () => {
         authService.signOut();
     }
@@ -12,20 +15,39 @@ const Profile = ({user}) => {
         setNewDisPlayName(value);
     }
 
-    const onSubmit = (event) => {
+    const onSubmit = async(event) => {
         event.preventDefault();
-        user.updateProfile({
-            disPlayName:newDisPlayName
-        })
-        
+        if(user.disPlayName !== newDisPlayName){
+            await user.updateProfile({
+                disPlayName:newDisPlayName
+            })
+        }
+        refreshUser();
     }
+
+    // 내가 작성한 인스타그램 글만 불러오기
+    useEffect(()=>{ 
+        let mounted=true;
+        if(mounted){
+            dbService.collection("posts").where("user","==",user.uid).onSnapshot(snapshot=>{
+                const instaArray= snapshot.docs.map(doc=>({
+                    ...doc.data(),
+                    post_id:doc.id
+                }));
+                setPostArray(instaArray);
+            });
+            refreshUser();
+        }   
+        return () => mounted=false;
+    },[]);
 
     return (
         <>
             <form onSubmit={onSubmit}>
                 <input
                     type="text"
-                    value={newDisPlayName}
+                    placeholder="Display name"
+                    value={newDisPlayName==null ? "" :newDisPlayName}
                     required
                     onChange={onChange}
                 />
@@ -35,7 +57,15 @@ const Profile = ({user}) => {
                 />
             </form>
             <div>
-
+                { 
+                    postArray.map(post => (
+                        <Instagram
+                            key={post.post_id}
+                            post={post}
+                            isOwner={post.user === user.uid}
+                        />
+                    ))
+                }
             </div>
             <button onClick={logOut}>Log Out</button>
         </>

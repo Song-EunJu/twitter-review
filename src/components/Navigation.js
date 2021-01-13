@@ -8,7 +8,7 @@ const Navigation = ({user}) => {
                     <li>Home</li>
                 </Link>
                 <Link to="/profile">
-                    <li>{user.displayName!=null ? user.displayName+"s profile" : "Profile"}</li>
+                    <li>{user.displayName ? `${user.displayName}'s Profile` : "Profile"}</li>
                 </Link>
             </ul>
         </>
