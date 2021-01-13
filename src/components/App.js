@@ -7,12 +7,20 @@ function App() {
   const [init, setInit]=useState(false); // 초기화 여부
 
   authService.onAuthStateChanged(user=>{
-    if(user)
+    if(user){
       setUser(user);
+      console.log(user)
+    }
     else
       setUser(null);
     setInit(true);
   });
+
+  // const refreshUser = () => {
+  //   user.updateProfile({
+  //     disPlayName:disPlayName
+  //   })
+  // }
 
   return (
     <>
